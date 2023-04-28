@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/RoboTune.iml" filepath="$PROJECT_DIR$/.idea/RoboTune.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/robo-tune.iml" filepath="$PROJECT_DIR$/.idea/robo-tune.iml" />
     </modules>
   </component>
 </project>
