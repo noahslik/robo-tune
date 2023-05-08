@@ -3,10 +3,11 @@ import sounddevice as sd
 from matplotlib import pyplot as plt
 from scipy.fft import rfft, rfftfreq
 
-DURATION = 0.1  # seconds
+DURATION = 1  # seconds
 SAMPLE_RATE = 48000  # Hz
 N = int(DURATION * SAMPLE_RATE)
 T = 1.0 / SAMPLE_RATE
+FREQ_THRESHOLD = 10
 
 notes_dict = {
     "E2": 82.41,
@@ -28,10 +29,27 @@ def plot_fourier_transform(fourier, freq):
     plt.show()
 
 
+def find_closest_note(loudest_freq):
+    closest_note = None
+    closest_note_diff = None
+    for key in notes_dict:
+        diff = notes_dict[key] - loudest_freq
+        if (closest_note_diff is None) or (abs(diff) < abs(closest_note_diff)):
+            closest_note = key
+            closest_note_diff = diff
+    return closest_note, closest_note_diff
+
+
+def find_loudest_frequency(fourier, freq):
+    for index, value in enumerate(fourier):
+        if value > FREQ_THRESHOLD:
+            return freq[index]
+    return 0
+
+
 def main():
     while True:
         # Record microphone input
-        print("Recording...")
         recording = sd.rec(int(DURATION * SAMPLE_RATE), blocking=True)
         recording = recording[:, 0]
 
@@ -41,18 +59,14 @@ def main():
         plot_fourier_transform(fourier, freq)
 
         # Find the loudest frequency in the recording
-        loudest_freq = freq[np.argmax(fourier)]
+        loudest_freq = find_loudest_frequency(fourier, freq)
 
         # Find the closest note to the found frequency
-        closest_note = None
-        closest_note_diff = None
-        for key in notes_dict:
-            diff = notes_dict[key] - loudest_freq
-            if (closest_note_diff is None) or (abs(diff) < abs(closest_note_diff)):
-                closest_note = key
-                closest_note_diff = diff
+        closest_note, closest_note_diff = find_closest_note(loudest_freq)
 
-        print("Current frequency:", loudest_freq, "Closest note:", closest_note, "Difference:", closest_note_diff)
+        print("Current frequency:", loudest_freq, "|",
+              "Closest note:", closest_note, "|",
+              "Difference:", closest_note_diff)
 
 
 if __name__ == '__main__':
