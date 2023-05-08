@@ -3,9 +3,9 @@ import sounddevice as sd
 from matplotlib import pyplot as plt
 from scipy.fft import rfft, rfftfreq
 
-DURATION = 1  # seconds
+DURATION = 0.1  # seconds
 SAMPLE_RATE = 48000  # Hz
-N = DURATION * SAMPLE_RATE
+N = int(DURATION * SAMPLE_RATE)
 T = 1.0 / SAMPLE_RATE
 
 notes_dict = {
