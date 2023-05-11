@@ -7,7 +7,8 @@ DURATION = 1  # seconds
 SAMPLE_RATE = 48000  # Hz
 N = int(DURATION * SAMPLE_RATE)
 T = 1.0 / SAMPLE_RATE
-FREQ_THRESHOLD = 10
+# FREQ_THRESHOLD = 1000  # MIC BOVEN KLANKKAST
+FREQ_THRESHOLD = 100  # MIC AAN NEK
 
 notes_dict = {
     "E2": 82.41,
@@ -49,14 +50,18 @@ def find_loudest_frequency(fourier, freq):
 
 def main():
     while True:
+        # input("Press enter to record.")
+        
         # Record microphone input
         recording = sd.rec(int(DURATION * SAMPLE_RATE), blocking=True)
         recording = recording[:, 0]
 
         # Calculate and plot FFT
         fourier = (2.0 / N) * np.abs(rfft(recording)[:N // 2])
+        for i in range(70):
+            fourier[i] = 0
         freq = rfftfreq(N, T)[:N // 2]
-        plot_fourier_transform(fourier, freq)
+        # plot_fourier_transform(fourier, freq)
 
         # Find the loudest frequency in the recording
         loudest_freq = find_loudest_frequency(fourier, freq)
