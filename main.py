@@ -58,7 +58,7 @@ sd.default.dtype = "int16"
 # FOURIER SETTINGS
 N = int(DURATION * SAMPLE_RATE)
 T = 1.0 / SAMPLE_RATE
-AMP_THRESHOLD = 1000  # MIC BOVEN KLANKKAST
+AMP_THRESHOLD = 500  # MIC BOVEN KLANKKAST
 # AMP_THRESHOLD = 100  # MIC AAN NEK
 
 note_frequencies = [82.41, 110.00, 146.83, 196.00, 246.94, 329.63] # E2, A2, D3, G3, B4, E4
@@ -84,29 +84,23 @@ def find_loudest_frequency(fourier, freq):
 def rotate_servo(selected_index, loudest_freq):
     servo_pin = SERVO_PINS[selected_index]
     target_frequency = note_frequencies[selected_index]
-    threshold = 2 # in Hz
+    threshold = 1 # in Hz
 
     frequency_diff = target_frequency - loudest_freq
+    print(frequency_diff)
     if abs(frequency_diff) > threshold:
         servo = GPIO.PWM(servo_pin,50)
         servo.start(0)
         sleep(0.1)
 
         if frequency_diff > 0:
-            if selected_index < 3:
-                servo.ChangeDutyCycle(6)
-            else:
-                servo.ChangeDutyCycle(8)
+            servo.ChangeDutyCycle(5)
             
         if frequency_diff < 0:
-            if selected_index < 3:
-                servo.ChangeDutyCycle(8)
-            else:
-                servo.ChangeDutyCycle(6)
+            servo.ChangeDutyCycle(9)
 
         sleep(0.1)
-
-        servo.ChangeDutyCycle(0)
+        servo.ChangeDutyCycle(7.5)
         servo.stop()
         return servo
 
@@ -123,7 +117,6 @@ def on_btn_pressed(channel):
     write_to_lcd(message_1, message_2)
 
 def next_btn_pressed(channel):
-    print("next pressed")
     global selected_index
 
     if selected_index == 5:
@@ -156,8 +149,8 @@ def write_to_lcd(message_1, message_2):
 
 def main():
     GPIO.add_event_detect(ON_BUTTON, GPIO.RISING, callback=on_btn_pressed, bouncetime=1000)
-    GPIO.add_event_detect(NEXT_BUTTON, GPIO.RISING, callback=next_btn_pressed, bouncetime=1000)
-    GPIO.add_event_detect(PREV_BUTTON, GPIO.RISING, callback=prev_btn_pressed, bouncetime=1000)
+    GPIO.add_event_detect(NEXT_BUTTON, GPIO.RISING, callback=next_btn_pressed, bouncetime=2000)
+    GPIO.add_event_detect(PREV_BUTTON, GPIO.RISING, callback=prev_btn_pressed, bouncetime=2000)
     write_to_lcd(message_1, message_2)
 
     while True:
