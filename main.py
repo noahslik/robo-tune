@@ -58,7 +58,7 @@ sd.default.dtype = "int16"
 # FOURIER SETTINGS
 N = int(DURATION * SAMPLE_RATE)
 T = 1.0 / SAMPLE_RATE
-AMP_THRESHOLD = 500  # MIC BOVEN KLANKKAST
+AMP_THRESHOLD = 3000  # MIC BOVEN KLANKKAST
 # AMP_THRESHOLD = 100  # MIC AAN NEK
 
 note_frequencies = [82.41, 110.00, 146.83, 196.00, 246.94, 329.63] # E2, A2, D3, G3, B4, E4
@@ -73,9 +73,12 @@ def sleep(duration, get_now=time.perf_counter):
 def plot_fourier_transform(fourier, freq):
     plt.plot(freq, fourier)
     plt.grid()
+    plt.xlim([0,500])
     plt.show()
 
 def find_loudest_frequency(fourier, freq):
+    # index = np.argmax(fourier)
+    # return freq[index]
     for index, value in enumerate(fourier):
         if value > AMP_THRESHOLD:
             return freq[index]
@@ -88,13 +91,13 @@ def rotate_servo(selected_index, loudest_freq):
 
     frequency_diff = target_frequency - loudest_freq
     print(frequency_diff)
-    if abs(frequency_diff) > threshold:
+    if abs(frequency_diff) >= threshold:
         servo = GPIO.PWM(servo_pin,50)
         servo.start(0)
         sleep(0.1)
 
         if frequency_diff > 0:
-            servo.ChangeDutyCycle(5)
+            servo.ChangeDutyCycle(6)
             
         if frequency_diff < 0:
             servo.ChangeDutyCycle(9)
@@ -165,7 +168,7 @@ def main():
                 for i in range(70):
                     fourier[i] = 0
                 freq = rfftfreq(N, T)[:N // 2]
-                plot_fourier_transform(fourier, freq)
+                # plot_fourier_transform(fourier, freq)
 
                 # Find the loudest frequency in the recording
                 loudest_freq = find_loudest_frequency(fourier, freq)
