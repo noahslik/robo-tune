@@ -85,16 +85,6 @@ def find_loudest_frequency(fourier, freq):
     return 0
 
 def rotate_servo(selected_index, loudest_freq):
-    if tuned_strings[selected_index]:
-        clear_lcd()
-        message_2 = "String is tuned!"
-        write_to_lcd()
-        return
-    
-    clear_lcd()
-    message_2 = "Tuning..."
-    write_to_lcd()
-
     servo_pin = SERVO_PINS[selected_index]
     target_frequency = note_frequencies[selected_index]
     threshold = 1 # in Hz
@@ -107,11 +97,10 @@ def rotate_servo(selected_index, loudest_freq):
         sleep(0.1)
 
         if frequency_diff > 0:
-            servo.ChangeDutyCycle(6)  
-        elif frequency_diff < 0:
+            servo.ChangeDutyCycle(6)
+            
+        if frequency_diff < 0:
             servo.ChangeDutyCycle(9)
-        else:
-            tuned_strings[selected_index] = True
 
         sleep(0.1)
         servo.ChangeDutyCycle(7.5)
@@ -128,7 +117,7 @@ def on_btn_pressed(channel):
     else:
         message_1 = "Press Start"
 
-    write_to_lcd()
+    write_to_lcd(message_1, message_2)
 
 def next_btn_pressed(channel):
     global selected_index
@@ -140,7 +129,7 @@ def next_btn_pressed(channel):
     time.sleep(1)
 
     message_1 = "Play string " + str(selected_index + 1)
-    write_to_lcd()
+    write_to_lcd(message_1, message_2)
 
 def prev_btn_pressed(channel):
     global selected_index
@@ -152,20 +141,20 @@ def prev_btn_pressed(channel):
     time.sleep(1)
 
     message_1 = "Play string " + str(selected_index + 1)
-    write_to_lcd()
+    write_to_lcd(message_1, message_2)
 
 
 def clear_lcd():
     lcd.message = "                \n                "
 
-def write_to_lcd():
+def write_to_lcd(message_1, message_2):
     lcd.message = message_1 + message_2
 
 def main():
     GPIO.add_event_detect(ON_BUTTON, GPIO.RISING, callback=on_btn_pressed, bouncetime=1000)
     GPIO.add_event_detect(NEXT_BUTTON, GPIO.RISING, callback=next_btn_pressed, bouncetime=2000)
     GPIO.add_event_detect(PREV_BUTTON, GPIO.RISING, callback=prev_btn_pressed, bouncetime=2000)
-    write_to_lcd()
+    write_to_lcd(message_1, message_2)
 
     while True:
         try:
@@ -188,10 +177,6 @@ def main():
 
                 if loudest_freq > 0:
                     servo = rotate_servo(selected_index, loudest_freq)
-                else:
-                    clear_lcd()
-                    message_2 = ""
-                    write_to_lcd()
 
         except KeyboardInterrupt:
             if servo:
