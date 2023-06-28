@@ -85,6 +85,13 @@ def find_loudest_frequency(fourier, freq):
     return 0
 
 def rotate_servo(selected_index, loudest_freq):
+    if (tuned_strings[selected_index] == True):
+        clear_lcd()
+        message_1 = "String tuned!\n"
+        message_2 = "Press next/prev"
+        write_to_lcd(message_1, message_2)
+        return
+
     servo_pin = SERVO_PINS[selected_index]
     target_frequency = note_frequencies[selected_index]
     threshold = 1 # in Hz
@@ -97,8 +104,7 @@ def rotate_servo(selected_index, loudest_freq):
         sleep(0.1)
 
         if frequency_diff > 0:
-            servo.ChangeDutyCycle(6)
-            
+            servo.ChangeDutyCycle(5)
         if frequency_diff < 0:
             servo.ChangeDutyCycle(9)
 
@@ -106,17 +112,22 @@ def rotate_servo(selected_index, loudest_freq):
         servo.ChangeDutyCycle(7.5)
         servo.stop()
         return servo
+    else:
+        tuned_strings[selected_index] = True
 
 def on_btn_pressed(channel):
     global is_listening
+    global tuned_strings
     is_listening = not is_listening
+    tuned_strings = [False, False, False, False, False, False]
 
-    clear_lcd()
     if is_listening:
         message_1 = "Play string " + str(selected_index + 1)
     else:
         message_1 = "Press Start"
+    message_2 = ""
 
+    clear_lcd()
     write_to_lcd(message_1, message_2)
 
 def next_btn_pressed(channel):
@@ -129,6 +140,8 @@ def next_btn_pressed(channel):
     time.sleep(1)
 
     message_1 = "Play string " + str(selected_index + 1)
+    message_2 = ""
+    clear_lcd()
     write_to_lcd(message_1, message_2)
 
 def prev_btn_pressed(channel):
@@ -141,6 +154,8 @@ def prev_btn_pressed(channel):
     time.sleep(1)
 
     message_1 = "Play string " + str(selected_index + 1)
+    message_2 = ""
+    clear_lcd()
     write_to_lcd(message_1, message_2)
 
 
@@ -150,11 +165,12 @@ def clear_lcd():
 def write_to_lcd(message_1, message_2):
     lcd.message = message_1 + message_2
 
+write_to_lcd(message_1, message_2)
+
 def main():
     GPIO.add_event_detect(ON_BUTTON, GPIO.RISING, callback=on_btn_pressed, bouncetime=1000)
     GPIO.add_event_detect(NEXT_BUTTON, GPIO.RISING, callback=next_btn_pressed, bouncetime=2000)
     GPIO.add_event_detect(PREV_BUTTON, GPIO.RISING, callback=prev_btn_pressed, bouncetime=2000)
-    write_to_lcd(message_1, message_2)
 
     while True:
         try:
@@ -176,7 +192,23 @@ def main():
                 print("Current frequency:", loudest_freq)
 
                 if loudest_freq > 0:
+                    message_1 = "Tuning...\n"
+                    message_2 = ""
+                    clear_lcd()
+                    write_to_lcd(message_1, message_2)
                     servo = rotate_servo(selected_index, loudest_freq)
+                elif tuned_strings[selected_index]:
+                    clear_lcd()
+                    message_1 = "String tuned!\n"
+                    message_2 = "Press next/prev"
+                    write_to_lcd(message_1, message_2)
+                elif is_listening:
+                    message_1 = "Play string " + str(selected_index + 1)
+                    message_2 = ""
+                    clear_lcd()
+                    write_to_lcd(message_1, message_2)
+
+
 
         except KeyboardInterrupt:
             if servo:
